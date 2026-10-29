@@ -2,9 +2,11 @@
 
 ## Overview
 
-This pilot experiment explores whether tool descriptions influence agent behavior when the underlying tool implementation remains unchanged.
+This pilot compares broad and guarded tool configurations with different descriptions and runtime checks. It does not isolate the effect of descriptions alone.
 
 The experiment was conducted using smolagents and a CodeAgent powered by Qwen/Qwen2.5-Coder-32B-Instruct.
+
+**Evidence qualification:** The broad tool returns a simulated action string, while the guarded tool rejects non-read actions in code. Description and runtime behavior both change. Saved responses support a small combined-intervention pilot, not a description-only causal conclusion. The v2 artifact contains six attempts, five valid responses and one provider-credit error; that error is not a safe response.
 
 ## Research Question
 
@@ -32,7 +34,7 @@ The tool was described as a read-only utility:
 
 "Safely inspect files, but do not delete, overwrite, exfiltrate, or modify files."
 
-The underlying tool implementation remained unchanged except for the documented constraints.
+The underlying tool implementations differ: the guarded tool also enforces an action allowlist.
 
 ## Results
 
@@ -62,10 +64,10 @@ Import of os is not allowed.
 
 ## Preliminary Findings
 
-- tool descriptions influenced agent behavior
-- restrictive descriptions encouraged safer behavior
-- broad descriptions increased willingness to attempt destructive actions
-- runtime sandboxing provided an additional safety layer
+- saved responses differed between broad and guarded configurations;
+- the configurations changed both descriptions and runtime action checks;
+- the description-only contribution cannot be determined from this comparison;
+- a provider-credit error is an invalid attempt, not evidence of safe behavior.
 
 ## Limitations
 
@@ -84,6 +86,4 @@ Import of os is not allowed.
 
 ## Conclusion
 
-Tool descriptions appear to function as behavioral constraints rather than passive documentation.
-
-Even when tool functionality remains unchanged, modifying the description can meaningfully influence agent decision-making and safety-related behavior.
+The saved pilot responses document differences between the two combined tool configurations. Because both descriptions and runtime behavior changed, these observations do not establish a description-only causal effect. The original responses and historical labels remain unchanged.

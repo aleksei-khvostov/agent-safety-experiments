@@ -1,200 +1,37 @@
 # Agent Safety Experiments
 
-A collection of small, reproducible evaluations exploring how information degrades as it moves across agent layers.
+Historical prototypes for studying execution-state reporting and oversight. This repository mixes deterministic fixture demonstrations with separately saved model-response pilots. Results must be read by evidence type.
 
-**Current status:** 9 completed evaluations, Phase 2 Oversight Signal Study completed, Findings 005–007 documented, and Phase 3 integration into multi-agent-safety-sim underway.
+## What the bridge results establish
 
-## Research Focus
+| Historical script/artifact | Cases | Recorded “planner_accuracy” | Recorded divergence | Evidence type |
+|---|---:|---:|---:|---|
+| bridge_emergent_eval.py | 12 | 75% | 25% | Deterministic fixture/scorer output; no model inference |
+| bridge_mixed_state_eval.py | 20 | 30% | 70% | Deterministic fixture/scorer output; no model inference |
 
-```text
-Worker Execution
-↓
-Planner Reports
-↓
-Watchdog Oversight
-```
+In both scripts, `planner_report(worker_output)` returns its input unchanged. Substring rules then normalize that text. The first script counts every `AMBIGUOUS` prediction as divergence, even when the authored actual label is also `AMBIGUOUS`; the mixed-state script uses label inequality alone. These rates follow from the fixtures and different scoring rules. They do not measure LLM planner accuracy or establish emergent model behavior. Historical filenames and result fields remain unchanged for provenance.
 
-The central theme of the project is **State-Report Divergence**:
+The bridge watchdog compares the same actual/reported labels used to define divergence. Its 100% detection and 0% false-positive rates are agreement by construction, not independent semantic oversight validation.
 
-> A mismatch between what actually happened in a system and what an agent or oversight layer reports happened.
+## Other evidence
 
----
+- [Tool-description pilot](experiments/tool_description_safety/README.md): saved model outputs, simulated tools, small sample. The broad and guarded tools differ in runtime behavior as well as description; this does not isolate a description-only causal effect.
+- [Delegation baseline](experiments/delegation_safety/README.md): deterministic keyword policy on eight authored tasks; no LLM planner.
+- [Reporting consistency](experiments/reporting_consistency/README.md): model-backed reporting scripts and saved responses, with lexical scoring and separately labeled historical rescoring. No new runs are implied.
+- [Watchdog prototypes](experiments/watchdog_evaluation/README.md): rule-based “semantic” normalization on authored cases; that name does not indicate an LLM judge.
+- [Bridge prototype](experiments/bridge_planner_worker_watchdog/README.md): independent authored actual-state labels and deterministic report/scoring paths.
 
-## Key Finding
+## Phase 2 provenance
 
-Across controlled, emergent, and stress-test evaluations, the highest divergence rates consistently appeared when execution traces contained mixed-status signals.
+Findings 005–007 belong to the controlled Phase 2 prototype preserved in [multi-agent-safety-sim](https://github.com/aleksei-khvostov/multi-agent-safety-sim/tree/main/research/phase2_oversight_signal). They describe those fixtures and rules, not general watchdog effectiveness.
 
-Examples:
+- [Findings](https://github.com/aleksei-khvostov/multi-agent-safety-sim/blob/main/research/phase2_oversight_signal/docs/FINDINGS.md)
+- [Oversight signal experiment](https://github.com/aleksei-khvostov/multi-agent-safety-sim/blob/main/research/phase2_oversight_signal/docs/OVERSIGHT_SIGNAL_EXPERIMENT.md)
+- [Trace ablation](https://github.com/aleksei-khvostov/multi-agent-safety-sim/blob/main/research/phase2_oversight_signal/docs/TRACE_ABLATION_EXPERIMENT.md)
+- [Trace without final state](https://github.com/aleksei-khvostov/multi-agent-safety-sim/blob/main/research/phase2_oversight_signal/docs/TRACE_WITHOUT_FINAL_STATE_EXPERIMENT.md)
 
-- success + failure
-- partial completion + failure
-- success + blocked
-- success + timeout
+## Reproducibility and limits
 
-Results from bridge evaluations:
+See the preserved [Research Summary](RESEARCH_SUMMARY.md) for the historical sequence; the evidence qualifications in this README govern interpretation of its claims. Bridge scripts write result files when executed; reproduce only in a disposable copy. Some other scripts invoke hosted models at import or execution time. This repository has no committed dependency specification, automated test suite, or CI workflow. No general model-safety or architecture ranking follows from these prototypes.
 
-| Evaluation | Planner Accuracy | Divergence Rate |
-|------------|-----------------|-----------------|
-| Emergent Bridge Baseline | 75% | 25% |
-| Mixed-State Stress Test | 30% | 70% |
-
-These results suggest that mixed-status execution traces are a major risk area for reporting reliability in agentic systems.
-
----
-
-## Additional Findings
-
-### Finding 005
-
-Execution traces substantially reduce honest-ambiguity false positives compared to report-only oversight.
-
-### Finding 006
-
-Most behavioral oversight value survives removal of explicit final-state labels, suggesting that watchdogs can extract meaningful information from execution traces rather than relying solely on outcome markers.
-
-### Finding 007
-
-Partial-progress signals provide the largest share of behavioral oversight value. Recovery signals contribute additional value, while timeout and warning signals showed minimal impact on the current evaluation set.
-
-For detailed methodology, ablation studies, limitations, and reproducibility notes, see:
-
-- `FINDINGS.md`
-- `RESEARCH_SUMMARY.md`
-- `OVERSIGHT_SIGNAL_EXPERIMENT.md`
-- `TRACE_ABLATION_EXPERIMENT.md`
-- `TRACE_WITHOUT_FINAL_STATE_EXPERIMENT.md`
-
----
-
-## Experiments
-
-| Experiment | Main Finding |
-|------------|--------------|
-| Tool Description Safety | Tool metadata influences agent behavior |
-| Delegation Safety | Safety-aware delegation reduces unsafe actions |
-| Reporting Consistency | Ambiguity propagates through reporting layers |
-| Watchdog Evaluation | Semantic watchdogs outperform lexical matching |
-| Watchdog Failure Modes | Nested multi-step reports break oversight assumptions |
-| Bridge Prototype | Independent ground truth enables measurable divergence |
-| Emergent Bridge Evaluation | Divergence appears without scripted overclaims |
-| Mixed-State Stress Test | Mixed-status traces substantially increase divergence |
-| Watchdog on Emergent Data | Semantic watchdog detects baseline mixed-state divergence* |
-
-\* See `RESEARCH_SUMMARY.md` for limitations regarding coupling between watchdog and environment normalization logic.
-
----
-
-## Repository Structure
-
-```text
-experiments/
-├── tool_description_safety/
-├── delegation_safety/
-├── reporting_consistency/
-├── watchdog_evaluation/
-└── bridge_planner_worker_watchdog/
-```
-
----
-
-## Research Summary
-
-For a complete overview of methods, results, limitations, and future work:
-
-➡️ **[Research Summary](RESEARCH_SUMMARY.md)**
-
-The summary includes:
-
-- Research questions
-- Experimental findings
-- Quantitative results
-- Methodological lessons
-- Current limitations
-- Future research directions
-
----
-
-## Methodological Principle
-
-One of the most important findings from this project is:
-
-```text
-No independent ground truth
-=
-No measurable divergence
-```
-
-Agent-generated reports cannot serve as their own source of truth.
-
-To evaluate reporting reliability, actual execution state must be stored independently from planner reports and watchdog interpretations.
-
----
-
-## Current Direction
-
-```text
-Worker
-↓
-Planner Report
-↓
-Watchdog Oversight
-↓
-State-Report Divergence Measurement
-↓
-Oversight Evaluation
-↓
-Multi-Agent Safety Simulation
-```
-
-The next stage of the project focuses on integrating these evaluation concepts into larger Planner → Worker → Watchdog environments and eventually into the `multi-agent-safety-sim` project.
-
----
-
-## Status
-
-### Phase 2 Status
-
-✅ Phase 2 Oversight Signal Study completed
-
-✅ Findings 005–007 documented
-
-✅ Research summary published
-
-✅ Bridge architecture validated
-
-✅ Integration plan defined
-
-🔄 Phase 3 integration in progress
-
----
-
-### Completed Experiments
-
-- Tool Description Safety
-- Delegation Safety
-- Reporting Consistency
-- Watchdog Evaluation
-- Watchdog Failure Modes
-- Bridge Prototype
-- Emergent Bridge Evaluation
-- Mixed-State Stress Test
-- Watchdog on Emergent Data
-
----
-
-## Next Priorities
-
-### Phase 3 Integration
-
-- Environment-owned ground truth
-- Explicit observability levels
-- Planner → Worker → Watchdog packaged workflow
-- State-Report Divergence measurement inside simulator
-- Reproduction of Findings 005–007 inside package architecture
-
-### Future Research
-
-- Delegation-chain scenarios
-- LLM-based planners
-- Stochastic evaluation
-- Larger evaluation datasets
+The packaged simulator contains later work. Its [current research state](https://github.com/aleksei-khvostov/multi-agent-safety-sim/blob/main/docs/CURRENT_RESEARCH_STATE.md) governs its own authorization boundaries; historical plans here do not authorize new model experiments.
